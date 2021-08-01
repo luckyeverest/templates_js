@@ -78,3 +78,130 @@ o1.hasOwnProperty("х")// => true: о имеет собственное свой
 o1.hasOwnProperty("у")// => false: о не имеет свойства у
 o1.hasOwnProperty("toString") // => false: toString - унаследованное свойство
 
+// Object.keys() возвращает массив имен перечислимых собс­твенных свойств объекта.
+
+// Object.getOwnPropertyNames() работает подобно Object.keys(), но возвращает массив также имен не перечислимых
+// собственных свойств при условии, что их имена представлены строками.
+
+// Object.getOwnPropertySymbols () возвращает собственныесвойства, имена которых являются значениями Symbol
+
+// Reflect.ownKeys() возвращает имена всех собственных свойств, перечислимых и не перечислимых, представленных как строками,
+// так и значениями Symbol.
+
+//Расширение объектов
+let target = { х: 1 }, source = { у: 2, z: 3 };
+for (let key of Object.keys(source)) {
+    target[key] = source[key];
+}
+target// => {x: 1, y: 2, z: 3}
+
+// Для каждого исходного объекта функцияObject.assign() копирует его перечислимые собственные свойства в целевой объект.
+// Похожа на Object .assign (), но не переопределяет существующие
+// свойства (и также не обрабатывает свойства Symbol).
+
+//создать новый объект, скопировать в него стандартные свойства и затем переопределить их посредством свойств в о:
+//о = Object.assign({}, defaults, о);
+// операции распростра­нения ... , например:
+// о = {...defaults, ...0 };
+
+//Object.assign (),которая копирует свойства, только если они отсутствуют:
+function merge(target, ...sources) {
+    for (let source of sources) {
+        for (let key of Object.keys(source)) {
+            if (!(key in target)) { // Это отличается от Object .assign ()
+                target[key] = source[key];
+                return target;
+            }
+            Object.assign({ x: 1 }, { x: 2, y: 2 }, { y: 3, z: 4 }) // => {x: 2, y: 3, z: 4}
+            merge({ x: 1 }, { x: 2, y: 2 }, { y: 3, z: 4 }) // => {x: 1, y: 2, z: 4}
+        }
+    }
+}
+
+//Сериализация объектов JSON.stringify() и JSON.parse() сериализируют и восстанавливают объек­ты
+let o3 = {
+    х: 1,
+    у: { z: [false, null, ""] }
+};// Определение тестового объекта
+let s = JSON.stringify(o3); //s == ' {"х": 1, "у":{"z": [false,null,,,,f]}}1'
+let p1 = JSON.parse(s); // p == {x: 1, y: {z : [false, null, ""])}
+console.log(s)
+console.log(p1)
+
+//Метод toString()
+//возвращает строку, каким-то об­разом представляющую значение объекта, на котором он вызван
+
+let s3 = { x: 1, у: 1 }.toString();// s == "[object Object]"
+
+//массив преобразуется в строку
+let point1 = {
+    x: 333,
+    y: 666,
+    toString: function () {
+        return (
+            `(${this.x}, ${this.y})`
+        )
+    }
+};
+console.log(point1)// => "(1, 2)": toString() применяется для преобразований в строки
+
+//valueOf () преобразовать объект в какой-то элементарный тип, отличающийся от строки — обычно в число
+let point12 = {
+    х: 3,
+    у: 4,
+    valueOf: function () { return Math.hypot(this.х, this.у); }
+};
+Number(point12) // => 5: valueOf () применяется для преобразования в числа
+point12 > 4// => true
+point12 > 5// => false
+point12 < 6// => true
+
+//toJSON() JSON.stringify() ищет метод toJSON() в каждом объекте,который нужно сериализировать
+let point44 = {
+    x: 1,
+    y: 2,
+    toString: function () { return `(${this.x}, ${this.y})`; },
+    toJSON: function () { return this.toString(); }
+}
+console.log(JSON.stringify(point44))// = > ["(1, 2)"]
+
+// Сокращенная запись свойств
+let х = 1, у = 2;
+let o9 = { х, у };//можно упустить двоеточение
+o9.х + o9.у // => 3
+
+//Вычисляемые имена свойств
+const PROPERTY__NAME = "p1"; //создание переменой 
+function computePropertyName() { return "p" + 2; }//создание второй переменой через функцию
+let о5 = {};//создание пустого объекта
+о5[PROPERTY__NAME] = 1;//добавление в объект имени свойства через переменую
+о5[computePropertyName()] = 2;//добавление в объект имени свойства через вызов функции
+console.log(о5)
+
+//копировать свойства существующе­го объекта в новый объект, используя внутри объектного литерала “операциюраспространения” ...
+let position = { х: 0, у: 0 };
+let dimensions = { width: 100, height: 75 };
+let rect = { ...position, ...dimensions };
+rect.x + rect.у + rect.width + rect.height // => 175
+
+//Сокращенная запись методов
+let square = {
+    area: function () { return this.side * this.side; },
+    side: 10
+};
+square.area()// => 100
+//тоже самое что и
+let square2 = {
+    area() { return this.side * this.side; },
+    side: 10
+};
+square2.area()// => 100
+
+// Методы получения и установки свойств
+let value1 = 2
+let p23 = {
+    dataProp: value1,// Обыкновенное свойство с данными
+    // Свойство с методами доступа определяется как пара функций
+    get accessorProp() { return this.dataProp; },
+    set accessorProp(value1) { this.dataProp = value1; }
+};
